@@ -419,7 +419,7 @@ body.viewer-mode.show-pair .pair-section { display:block; }
     <button class="header-tab" data-tab="style" onclick="switchTab('style')">베이스프롬</button>
   </div>
   <div class="header-right">
-    <span class="ver-badge">v10</span>
+    <span class="ver-badge">v13</span>
     <button class="btn-new-cat" id="viewerSettingsBtn" onclick="openViewerSettings()" title="뷰어 공유 설정" style="border-color:rgba(196,224,255,.6);color:var(--c-sky)">🔗 공유 설정</button>
     <button class="btn-new-cat" onclick="openAddCat()">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"/></svg>
@@ -479,7 +479,7 @@ body.viewer-mode.show-pair .pair-section { display:block; }
 
 <!-- CAT MODAL -->
 <div class="overlay" id="catModal">
-  <div class="modal">
+  <div class="modal" onmousedown="event.stopPropagation()">
     <div class="modal-head">
       <div class="modal-title" id="catModalTitle">카테고리 추가</div>
       <button class="modal-x" onclick="closeCatModal()">×</button>
@@ -513,7 +513,7 @@ body.viewer-mode.show-pair .pair-section { display:block; }
 
 <!-- ENTRY MODAL -->
 <div class="overlay" id="entryModal">
-  <div class="modal">
+  <div class="modal" onmousedown="event.stopPropagation()">
     <div class="modal-head">
       <div class="modal-title">항목 추가</div>
       <button class="modal-x" onclick="closeEntryModal()">×</button>
@@ -534,7 +534,7 @@ body.viewer-mode.show-pair .pair-section { display:block; }
 
 <!-- PAIR MODAL -->
 <div class="overlay" id="pairModal">
-  <div class="modal">
+  <div class="modal" onmousedown="event.stopPropagation()">
     <div class="modal-head">
       <div class="modal-title">💘 Pair 추가</div>
       <button class="modal-x" onclick="closePairModal()">×</button>
@@ -1103,7 +1103,7 @@ function savePair() {
 
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
-document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('on'); }));
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('mousedown', e=>{ if(e.target===o) o.classList.remove('on'); }));
 
 
 /* ━━ VIEWER MODE ━━ */
@@ -1115,7 +1115,10 @@ const PAIR_KEY = params.get('pair') || '';
 // 비밀번호는 localStorage에 해시로 저장 (편집자가 설정)
 // 기본값: 'tagvault' (편집자가 설정 안 했을 때)
 function getPwHash() {
-  return localStorage.getItem(VIEWER_PW_KEY) || simpleHash('tagvault');
+  // URL에 pw= 파라미터가 있으면 그걸 우선 사용 (공유 링크용)
+  const urlPw = params.get('pw');
+  if (urlPw) return urlPw;
+  return localStorage.getItem(VIEWER_PW_KEY) || 'NO_PW';
 }
 function simpleHash(s) {
   let h = 0;
@@ -1149,8 +1152,9 @@ function applyViewerMode() {
 
 function initViewerMode() {
   if (!IS_VIEWER) return;
-  // 비밀번호 없음으로 설정된 경우 바로 입장
-  if (getPwHash() === 'NO_PW') {
+  const pwHash = getPwHash();
+  // 비밀번호 없음 (NO_PW) 또는 pw 파라미터가 없고 localStorage도 없으면 바로 입장
+  if (pwHash === 'NO_PW') {
     applyViewerMode();
     return;
   }
@@ -1180,11 +1184,16 @@ function openViewerSettings() {
   const viewUrl = base + '?view=1';
   const viewPairUrl = base + '?view=1&pair=' + (newPairKey||localStorage.getItem('tagvault_pair_key')||'secret');
   const pwNote = (newPw.trim() === '') ? '🔓 비밀번호 없음 (바로 입장)' : '🔒 비밀번호 설정됨';
+  // 비밀번호가 있으면 해시를 URL에 포함해서 다른 브라우저에서도 작동하게
+  const storedHash = localStorage.getItem(VIEWER_PW_KEY) || 'NO_PW';
+  const pwParam = storedHash !== 'NO_PW' ? ('&pw=' + storedHash) : '';
+  const viewUrlFinal = viewUrl + pwParam;
+  const viewPairUrlFinal = viewPairUrl + pwParam;
   alert(
     '✅ 설정 완료! ' + pwNote + '\n\n' +
-    '📋 뷰어 링크 (Pair 숨김):\n' + viewUrl + '\n\n' +
-    '💘 뷰어 링크 (Pair 포함):\n' + viewPairUrl + '\n\n' +
-    '링크를 복사해서 공유하세요!'
+    '📋 뷰어 링크 (Pair 숨김):\n' + viewUrlFinal + '\n\n' +
+    '💘 뷰어 링크 (Pair 포함):\n' + viewPairUrlFinal + '\n\n' +
+    '이 링크를 그대로 공유하세요!'
   );
 }
 

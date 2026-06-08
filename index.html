@@ -420,7 +420,7 @@ body.viewer.hide-style [data-tab="style"]{display:none !important;}
       <button class="htab" data-tab="style" onclick="switchTab('style')" ondblclick="editTabName('style',this)"><span id="tlab-style">베이스프롬</span></button>
     </div>
     <div class="hright">
-      <span class="vbadge">v47</span>
+      <span class="vbadge">v48</span>
       <button class="hbtn vonly" id="themebtn" onclick="openTheme()">🎨</button>
       <button class="hbtn vonly" id="cardbtn" onclick="openCardStyle()">⊞</button>
       <button class="hbtn" id="stylesharebtn" onclick="toggleStyleShare()" style="display:none"></button>
@@ -663,6 +663,8 @@ function onAuth(user){
       const el=document.getElementById(id);if(el) el.style.display='flex';
     });
     loadStyleShare();
+    loadTheme();
+    loadCardStyle();
     listenData(user.uid);
   } else {
     document.getElementById('loginscreen').style.display='flex';
@@ -729,6 +731,11 @@ function delGalImg(catId,idx){
 }
 
 // ── IMAGE POSITION ──
+function handleCardClick(e,catId){
+  if(e.detail>=2) return; // 더블클릭이면 무시
+  selectCat(catId);
+}
+
 function openImgPos(catId){
   if(IS_VIEW)return;
   const cat=(cache[tab]||[]).find(c=>c.id===catId);if(!cat)return;
@@ -886,7 +893,7 @@ function ovCardHtml(cat){
   else if(g.length) thumb=`<img src="${g[0]}" alt="" style="${ps}">`;
   else thumb=`<div class="ovthumb-emoji">${cat.emoji||'🏷️'}</div>`;
   const dbl=IS_VIEW?'':`ondblclick="event.preventDefault();event.stopPropagation();openImgPos('${cat.id}')" title="더블클릭: 이미지 위치"`;
-  return `<div class="ovcard" onclick="if(event.detail<2)selectCat('${cat.id}')" ${dbl}>
+  return `<div class="ovcard" onclick="if(!IS_VIEW&&event.detail>=2){event.preventDefault();event.stopPropagation();}else if(event.detail<2)selectCat('${cat.id}')" ${dbl}>
     <div class="ovthumb">${thumb}</div>
     <div class="ovinfo"><div class="ovname">${esc(cat.name)}</div>${cat.tag?`<div class="ovsub">${esc(cat.tag)}</div>`:''}</div>
   </div>`;
@@ -1075,14 +1082,24 @@ function applyViewerMode(){
   if(PAIR_KEY)document.body.classList.add('showpair');
   document.body.classList.add('viewer');
 
-  // 테마 적용
+  // 테마 적용 (URL 파라미터 우선)
   const thParam=params.get('th');
-  if(thParam){try{applyTheme(JSON.parse(decodeURIComponent(thParam)));}catch(e){}}
-  // 카드 스타일 적용
-  const cs=params.get('cs'),cf=params.get('cf');
-  if(cs)localStorage.setItem('tv_cardstyle',cs);
-  if(cf)localStorage.setItem('tv_cardframe',cf);
-  loadCardStyle();
+  if(thParam){
+    try{
+      const t=JSON.parse(decodeURIComponent(thParam));
+      applyTheme(t);
+    }catch(e){console.warn('theme parse fail',e);}
+  } else {
+    loadTheme(); // 저장된 테마 없으면 기본
+  }
+  // 카드 스타일 적용 (URL 파라미터 우선)
+  const csParam=params.get('cs'),cfParam=params.get('cf');
+  const cardStyle=csParam||'vertical';
+  const cardFrame=cfParam||'none';
+  document.body.classList.remove('card-vertical','card-horizontal');
+  document.body.classList.add('card-'+cardStyle);
+  ['none','round','square','shadow','border','polaroid'].forEach(fr=>document.body.classList.remove('frame-'+fr));
+  document.body.classList.add('frame-'+cardFrame);
 }
 
 // ── SHARE SETTINGS ──
@@ -1102,12 +1119,19 @@ function openShareSettings(){
   const theme=localStorage.getItem('tv_theme')||'';
   const cardStyle=localStorage.getItem('tv_cardstyle')||'vertical';
   const cardFrame=localStorage.getItem('tv_cardframe')||'none';
-  const thParam=theme?'&th='+encodeURIComponent(theme):'';
+  // 테마 항상 포함 (현재 적용된 CSS 변수 값 기준)
+  const currentTheme = {};
+  ['bg','sky','sky2','pink','pink2','border','cs','cp'].forEach(k=>{
+    currentTheme[k] = getComputedStyle(document.documentElement).getPropertyValue('--'+k).trim();
+  });
+  const thParam = '&th=' + encodeURIComponent(JSON.stringify(currentTheme));
+  const csParamShare = '&cs=' + cardStyle;
+  const cfParamShare = cardFrame !== 'none' ? '&cf=' + cardFrame : '';
   const csParam=cardStyle!=='vertical'?'&cs='+cardStyle:'';
   const cfParam=cardFrame!=='none'?'&cf='+cardFrame:'';
   const base=location.origin+location.pathname;
-  document.getElementById('sharelink1').value=`${base}?view=1&uid=${uid}${pwParam}${styleParam}${thParam}${csParam}${cfParam}`;
-  document.getElementById('sharelink2').value=`${base}?view=1&uid=${uid}${pwParam}&pair=${pairKey}${styleParam}${thParam}${csParam}${cfParam}`;
+  document.getElementById('sharelink1').value=`${base}?view=1&uid=${uid}${pwParam}${styleParam}${thParam}${csParamShare}${cfParamShare}`;
+  document.getElementById('sharelink2').value=`${base}?view=1&uid=${uid}${pwParam}&pair=${pairKey}${styleParam}${thParam}${csParamShare}${cfParamShare}`;
   document.getElementById('sharecpbtn1').textContent='복사';document.getElementById('sharecpbtn1').classList.remove('done');
   document.getElementById('sharecpbtn2').textContent='복사';document.getElementById('sharecpbtn2').classList.remove('done');
   document.getElementById('sharepop').classList.add('on');
@@ -1310,10 +1334,8 @@ function resetTheme(){localStorage.removeItem('tv_theme');applyTheme(THEME_PRESE
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
 // ── INIT ──
-loadTheme();
-loadCardStyle();
 loadTabNames();
-loadFirebase();
+loadFirebase(); // onAuth 안에서 loadTheme/loadCardStyle 호출
 </script>
 </body>
 </html>

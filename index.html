@@ -154,7 +154,7 @@ body.frame-polaroid .ovsub {
 .ovthumb{position:absolute;inset:0;overflow:hidden;}.ovthumb img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;}
 .ovthumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .ovthumb-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;}
-.ovthumb-bg{position:absolute;inset:0;background-repeat:no-repeat;}
+.ovthumb-bg{position:absolute;inset:0;background-repeat:no-repeat;background-size:cover;background-position:50% 50%;}
 .ovstrip{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;}
 .ovstrip img{width:100%;height:100%;object-fit:cover;}
 .ovinfo{position:absolute;bottom:0;left:0;right:0;padding:28px 12px 12px;background:linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 100%);}
@@ -444,7 +444,7 @@ body.viewer.hide-style [data-tab="style"]{display:none !important;}
       <button class="htab" data-tab="style" onclick="switchTab('style')" ondblclick="editTabName('style',this)"><span id="tlab-style">베이스프롬</span></button>
     </div>
     <div class="hright">
-      <span class="vbadge">v59</span>
+      <span class="vbadge">v60</span>
       <button class="hbtn vonly" onclick="openTheme()">🎨</button>
       <button class="hbtn vonly" onclick="openCardStyle()">⊞</button>
       <button class="hbtn" id="stylesharebtn" onclick="toggleStyleShare()" style="display:none"></button>
@@ -962,7 +962,10 @@ function renderOverview(){
   });
   const gids=groups.map(g=>g.id);
   const ungrouped=cats.filter(c=>!c.groupId||!gids.includes(c.groupId));
-  if(ungrouped.length) html+=`<div class="ungrouped-section"><div class="group-grid">${ungrouped.map(cat=>ovCardHtml(cat)).join('')}</div></div>`;
+  if(ungrouped.length){
+    const divider=groups.length?`<div style="height:1px;background:var(--border);margin:4px 0 20px;"></div>`:'';
+    html+=`<div class="ungrouped-section">${divider}<div class="group-grid">${ungrouped.map(cat=>ovCardHtml(cat)).join('')}</div></div>`;
+  }
   if(!IS_VIEW) html+=`<button class="add-group-btn" onclick="addGroup()">+ 그룹 추가</button>`;
   grid.innerHTML=html;
 }

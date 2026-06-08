@@ -104,16 +104,26 @@ header { grid-column:1/-1; display:flex; align-items:center; padding:0 22px; gap
 
 /* OVERVIEW */
 .overview { padding:20px; }
-.ovgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; }
-.ovcard { background:var(--white); border:1px solid var(--border); border-radius:14px; overflow:hidden; cursor:pointer; transition:box-shadow .18s,transform .18s,border-color .15s; }
-.ovcard:hover { box-shadow:0 6px 24px rgba(160,180,220,.18); transform:translateY(-2px); border-color:var(--sky2); }
-.ovthumb { width:100%; aspect-ratio:1; background:linear-gradient(135deg,var(--sky),var(--pink)); display:flex; align-items:center; justify-content:center; font-size:42px; overflow:hidden; position:relative; }
-.ovthumb img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+.ovgrid { display:block; }
+.ovcard {
+  border-radius:14px; overflow:hidden; cursor:pointer;
+  transition:box-shadow .2s,transform .2s;
+  position:relative; aspect-ratio:3/4;
+  background:linear-gradient(135deg,var(--sky),var(--pink));
+}
+.ovcard:hover { box-shadow:0 8px 28px rgba(0,0,0,.18); transform:translateY(-3px); }
+.ovthumb { position:absolute; inset:0; }
+.ovthumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.ovthumb-emoji { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:52px; }
 .ovstrip { position:absolute; inset:0; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:1px; }
-.ovstrip img { width:100%; height:100%; object-fit:cover; position:static; }
-.ovinfo { padding:10px 12px; border-top:1px solid var(--border); }
-.ovname { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.ovsub { font-size:10px; color:var(--dim); font-family:'DM Mono',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ovstrip img { width:100%; height:100%; object-fit:cover; }
+.ovinfo {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:28px 12px 12px;
+  background:linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 100%);
+}
+.ovname { font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 1px 3px rgba(0,0,0,.4); }
+.ovsub { font-size:10px; color:rgba(255,255,255,.75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; font-family:'DM Mono',monospace; }
 .ovempty { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 20px; gap:10px; color:var(--dim); }
 .ovempty .ring { width:60px; height:60px; border-radius:50%; border:2px dashed var(--dim); display:flex; align-items:center; justify-content:center; font-size:24px; }
 
@@ -483,7 +493,7 @@ body.viewer.showpair .pairsec { display:block !important; }
 .add-group-btn:hover { border-color:var(--sky2); color:var(--cs); background:rgba(196,224,255,.1); }
 
 /* 그룹 그리드 */
-.group-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-bottom:28px; }
+.group-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-bottom:28px; }
 .group-section { margin-bottom:8px; }
 /* 미배정 카테고리 */
 .ungrouped-section { margin-bottom:20px; }
@@ -553,7 +563,7 @@ body.viewer.showpair .pairsec { display:block !important; }
       </button>
     </div>
     <div class="hright">
-      <span class="vbadge">v34</span>
+      <span class="vbadge">v36</span>
       <button class="hbtn" id="sharebtn" onclick="openShareSettings()" style="display:none">🔗 공유 설정</button>
       <button class="hbtn" id="stylesharebtn" onclick="toggleStyleShare()" style="display:none;border-color:rgba(248,204,228,.6);color:var(--cp)" title="베이스프롬 공유 on/off">베이스프롬 공유 ●</button>
       <button class="hbtn" id="themebtn" onclick="openTheme()">🎨 테마</button>
@@ -1087,13 +1097,18 @@ function renderOverview() {
 
 function ovCardHtml(cat) {
   const g = cat.gallery || [];
-  let thumb = cat.avatar
-    ? `<img src="${cat.avatar}" alt="">`
-    : g.length >= 4
-      ? `<div class="ovstrip">${g.slice(0,4).map(s=>`<img src="${s}" alt="">`).join('')}</div>`
-      : g.length ? `<img src="${g[0]}" alt="">` : (cat.emoji || '🏷️');
+  let thumbContent = '';
+  if (cat.avatar) {
+    thumbContent = `<img src="${cat.avatar}" alt="">`;
+  } else if (g.length >= 4) {
+    thumbContent = `<div class="ovstrip">${g.slice(0,4).map(s=>`<img src="${s}" alt="">`).join('')}</div>`;
+  } else if (g.length) {
+    thumbContent = `<img src="${g[0]}" alt="">`;
+  } else {
+    thumbContent = `<div class="ovthumb-emoji">${cat.emoji || '🏷️'}</div>`;
+  }
   return `<div class="ovcard" onclick="selectCat('${cat.id}')">
-    <div class="ovthumb">${thumb}</div>
+    <div class="ovthumb">${thumbContent}</div>
     <div class="ovinfo">
       <div class="ovname">${esc(cat.name)}</div>
       ${cat.tag ? `<div class="ovsub">${esc(cat.tag)}</div>` : ''}

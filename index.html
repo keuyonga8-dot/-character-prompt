@@ -600,6 +600,18 @@ body.card-horizontal .ungrouped-section .group-grid {
 .imgpos-size-row label { font-size:11px; color:var(--muted); font-weight:600; min-width:40px; }
 .imgpos-size-row input[type=range] { flex:1; }
 .imgpos-size-row span { font-size:11px; color:var(--text); min-width:32px; text-align:right; }
+
+/* ━━ CARD FRAMES ━━ */
+body.frame-none .ovcard { border-radius:14px; }
+body.frame-round .ovcard { border-radius:24px; }
+body.frame-square .ovcard { border-radius:4px; }
+body.frame-shadow .ovcard { box-shadow:0 8px 24px rgba(0,0,0,.25); }
+body.frame-border .ovcard { outline:3px solid var(--white); box-shadow:0 0 0 5px rgba(0,0,0,.15); }
+body.frame-polaroid .ovcard { border-radius:4px; background:var(--white); padding:6px 6px 28px; }
+body.frame-polaroid .ovthumb { border-radius:2px; position:relative; height:calc(100% - 28px); }
+body.frame-polaroid .ovinfo { position:absolute; bottom:-24px; left:0; right:0; padding:4px 8px; background:none; }
+body.frame-polaroid .ovname { color:var(--text); font-size:11px; text-shadow:none; }
+body.frame-polaroid .ovsub { color:var(--muted); }
 </style>
 </head>
 <body>
@@ -631,10 +643,10 @@ body.card-horizontal .ungrouped-section .group-grid {
       </button>
     </div>
     <div class="hright">
-      <span class="vbadge">v42</span>
+      <span class="vbadge">v44</span>
       <button class="hbtn" id="sharebtn" onclick="openShareSettings()" style="display:none">🔗 공유 설정</button>
       <button class="hbtn" id="stylesharebtn" onclick="toggleStyleShare()" style="display:none;border-color:rgba(248,204,228,.6);color:var(--cp)" title="베이스프롬 공유 on/off">베이스프롬 공유 ●</button>
-      <button class="hbtn" id="cardstyle-btn" onclick="toggleCardStyle()">⊞ 카드</button>
+      <button class="hbtn" id="cardstyle-btn" onclick="openCardStylePop()">⊞ 카드</button>
       <button class="hbtn" id="themebtn" onclick="openTheme()">🎨 테마</button>
       <button class="hbtn" id="groupbtn" onclick="openGroupModal()" style="display:none">📁 그룹 관리</button>
       <button class="hbtn" id="addbtn" onclick="openAddCat()" style="display:none">
@@ -819,6 +831,36 @@ body.card-horizontal .ungrouped-section .group-grid {
   </div>
 </div>
 
+
+<!-- CARD STYLE POPUP -->
+<div class="imgpos-popup" id="cardstylepopup" onmousedown="if(event.target===this)closeCardStylePop()">
+  <div class="imgpos-box" onmousedown="event.stopPropagation()" style="width:400px">
+    <div class="imgpos-title">⊞ 카드 스타일</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">비율</div>
+        <div style="display:flex;gap:8px">
+          <button class="cancelbtn" id="ratio-v" onclick="setCardRatio('vertical')">세로형 3:4</button>
+          <button class="cancelbtn" id="ratio-h" onclick="setCardRatio('horizontal')">가로형 4:3</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">틀 스타일</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="cancelbtn" id="frame-none" onclick="setCardFrame('none')">기본</button>
+          <button class="cancelbtn" id="frame-round" onclick="setCardFrame('round')">둥글게</button>
+          <button class="cancelbtn" id="frame-square" onclick="setCardFrame('square')">각지게</button>
+          <button class="cancelbtn" id="frame-shadow" onclick="setCardFrame('shadow')">그림자</button>
+          <button class="cancelbtn" id="frame-border" onclick="setCardFrame('border')">테두리</button>
+          <button class="cancelbtn" id="frame-polaroid" onclick="setCardFrame('polaroid')">폴라로이드</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="savebtn" onclick="closeCardStylePop()">완료</button>
+    </div>
+  </div>
+</div>
 <!-- IMAGE POSITION POPUP -->
 <div class="imgpos-popup" id="imgpospopup" onmousedown="if(event.target===this)closeImgPos()">
   <div class="imgpos-box" onmousedown="event.stopPropagation()">
@@ -1197,7 +1239,7 @@ function ovCardHtml(cat) {
   } else {
     thumbContent = `<div class="ovthumb-emoji">${cat.emoji || '🏷️'}</div>`;
   }
-  return `<div class="ovcard" onclick="selectCat('${cat.id}')" ondblclick="event.stopPropagation();openImgPos('${cat.id}')" title="더블클릭: 이미지 위치 조절">
+  return `<div class="ovcard" onclick="if(!event.detail||event.detail<2)selectCat('${cat.id}')" ondblclick="event.preventDefault();event.stopPropagation();openImgPos('${cat.id}')" title="더블클릭: 이미지 위치 조절">
     <div class="ovthumb">${thumbContent}</div>
     <div class="ovinfo">
       <div class="ovname">${esc(cat.name)}</div>
@@ -1778,18 +1820,52 @@ function saveImgPos() {
 
 function closeImgPos() { document.getElementById('imgpospopup').classList.remove('on'); }
 /* ── CARD STYLE ── */
+const FRAMES = ['none','round','square','shadow','border','polaroid'];
+
 function loadCardStyle() {
   const s = localStorage.getItem('tv_cardstyle') || 'vertical';
-  document.body.classList.toggle('card-vertical', s === 'vertical');
-  document.body.classList.toggle('card-horizontal', s === 'horizontal');
-  const btn = document.getElementById('cardstyle-btn');
-  if (btn) btn.textContent = s === 'vertical' ? '⊞ 세로형' : '⊟ 가로형';
+  const f = localStorage.getItem('tv_cardframe') || 'none';
+  document.body.classList.remove('card-vertical','card-horizontal');
+  document.body.classList.add('card-' + s);
+  FRAMES.forEach(fr => document.body.classList.remove('frame-'+fr));
+  document.body.classList.add('frame-' + f);
 }
-function toggleCardStyle() {
-  const cur = localStorage.getItem('tv_cardstyle') || 'vertical';
-  const next = cur === 'vertical' ? 'horizontal' : 'vertical';
-  localStorage.setItem('tv_cardstyle', next);
+
+function setCardRatio(r) {
+  localStorage.setItem('tv_cardstyle', r);
   loadCardStyle();
+  updateCardStyleUI();
+}
+
+function setCardFrame(f) {
+  localStorage.setItem('tv_cardframe', f);
+  loadCardStyle();
+  updateCardStyleUI();
+}
+
+function updateCardStyleUI() {
+  const s = localStorage.getItem('tv_cardstyle') || 'vertical';
+  const f = localStorage.getItem('tv_cardframe') || 'none';
+  ['ratio-v','ratio-h'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.borderColor = '';
+  });
+  const rv = document.getElementById('ratio-v');
+  const rh = document.getElementById('ratio-h');
+  if (rv) rv.style.borderColor = s==='vertical' ? 'var(--sky2)' : '';
+  if (rh) rh.style.borderColor = s==='horizontal' ? 'var(--sky2)' : '';
+  FRAMES.forEach(fr => {
+    const el = document.getElementById('frame-'+fr);
+    if (el) el.style.borderColor = f===fr ? 'var(--sky2)' : '';
+  });
+}
+
+function openCardStylePop() {
+  updateCardStyleUI();
+  document.getElementById('cardstylepopup').classList.add('on');
+}
+function closeCardStylePop() {
+  document.getElementById('cardstylepopup').classList.remove('on');
 }
 /* ── THEME ── */
 const THEME_PRESETS = [

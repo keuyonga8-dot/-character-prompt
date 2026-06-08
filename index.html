@@ -89,11 +89,45 @@ header{grid-column:1/-1;display:flex;align-items:center;padding:0 14px;gap:6px;b
 .add-group-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border:1.5px dashed var(--dim);border-radius:20px;background:none;font-family:inherit;font-size:12px;font-weight:600;color:var(--dim);cursor:pointer;margin-top:4px;transition:all .15s;}
 .add-group-btn:hover{border-color:var(--sky2);color:var(--cs);background:rgba(196,224,255,.1);}
 
+
+/* ── POLAROID ── */
+body.frame-polaroid .ovcard{
+  background:var(--white) !important;
+  border:2px solid #e8e0d0 !important;
+  box-shadow:3px 4px 14px rgba(0,0,0,.18) !important;
+  border-radius:3px !important;
+  aspect-ratio:unset !important;
+  padding:8px 8px 42px !important;
+  overflow:visible !important;
+  display:flex;flex-direction:column;
+}
+body.frame-polaroid .ovthumb{
+  position:relative !important;
+  inset:unset !important;
+  width:100%;
+  aspect-ratio:1/1;
+  flex-shrink:0;
+  border-radius:1px;
+  overflow:hidden;
+}
+body.frame-polaroid.card-horizontal .ovthumb{aspect-ratio:16/9;}
+body.frame-polaroid .ovthumb img{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;}
+body.frame-polaroid .ovinfo{
+  position:absolute !important;
+  bottom:0;left:0;right:0;
+  height:42px;
+  padding:8px 12px;
+  background:var(--white) !important;
+  display:flex;flex-direction:column;justify-content:center;
+}
+body.frame-polaroid .ovname{color:var(--text) !important;font-size:12px;font-weight:700;text-shadow:none !important;}
+body.frame-polaroid .ovsub{color:var(--muted) !important;}
+body.frame-polaroid .card-imgpos-btn{top:6px;right:6px;}
 /* ── CARD STYLES ── */
 /* 기본: 오버레이 스타일 */
 .ovcard{border-radius:14px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .2s;position:relative;aspect-ratio:3/4;background:linear-gradient(135deg,var(--sky),var(--pink));}
 .ovcard:hover{box-shadow:0 8px 28px rgba(0,0,0,.2);transform:translateY(-3px);}
-.ovthumb{position:absolute;inset:0;overflow:hidden;}
+.ovthumb{position:absolute;inset:0;overflow:hidden;}.ovthumb img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;}
 .ovthumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .ovthumb-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;}
 .ovstrip{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;}
@@ -113,7 +147,7 @@ body.frame-square .ovcard{border-radius:4px;}
 body.frame-shadow .ovcard{box-shadow:0 8px 24px rgba(0,0,0,.25);}
 body.frame-border .ovcard{outline:3px solid var(--white);box-shadow:0 0 0 5px rgba(0,0,0,.15);}
 
-/* 폴라로이드 - 3번 이미지처럼 깔끔한 흰 테두리 */
+
 body.frame-polaroid .ovcard{
   background:var(--white);
   border:1px solid #ddd;
@@ -346,7 +380,7 @@ body.frame-polaroid .ovsub{color:var(--muted);}
 .style-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .14s;}
 .style-btn:hover{border-color:var(--sky2);color:var(--cs);}
 .style-btn.on{border-color:var(--sky2);color:var(--cs);background:rgba(196,224,255,.15);}
-.imgpos-preview{width:100%;height:200px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(135deg,var(--sky),var(--pink));cursor:grab;user-select:none;}
+.imgpos-preview{width:100%;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(135deg,var(--sky),var(--pink));cursor:grab;user-select:none;}
 .imgpos-preview img{width:100%;height:100%;object-fit:cover;display:block;}
 .size-row{display:flex;align-items:center;gap:10px;}
 .size-row label{font-size:11px;color:var(--muted);font-weight:600;min-width:40px;}
@@ -403,7 +437,7 @@ body.viewer.hide-style [data-tab="style"]{display:none !important;}
       <button class="htab" data-tab="style" onclick="switchTab('style')" ondblclick="editTabName('style',this)"><span id="tlab-style">베이스프롬</span></button>
     </div>
     <div class="hright">
-      <span class="vbadge">v55</span>
+      <span class="vbadge">v56</span>
       <button class="hbtn vonly" onclick="openTheme()">🎨</button>
       <button class="hbtn vonly" onclick="openCardStyle()">⊞</button>
       <button class="hbtn" id="stylesharebtn" onclick="toggleStyleShare()" style="display:none"></button>
@@ -718,6 +752,10 @@ function openCardImgPos(catId){
   imgPosCatId=catId;imgPosGalIdx=-1;
   const saved=cat.imgPos||{x:50,y:50,size:100};
   imgPosX=saved.x;imgPosY=saved.y;imgPosSize=saved.size||100;
+  const cs=localStorage.getItem('tv_cardstyle')||'vertical';
+  const cf=localStorage.getItem('tv_cardframe')||'none';
+  const ratio=cf==='polaroid'?(cs==='horizontal'?'16/9':'3/4'):(cs==='horizontal'?'16/9':'3/4');
+  document.getElementById('imgpos-preview').style.aspectRatio=ratio;
   document.getElementById('imgpos-img').src=src;
   document.getElementById('imgpos-size').value=imgPosSize;
   document.getElementById('imgpos-size-val').textContent=imgPosSize+'%';
@@ -768,19 +806,8 @@ function updateImgPos(){
   imgPosSize=parseInt(document.getElementById('imgpos-size').value);
   document.getElementById('imgpos-size-val').textContent=imgPosSize+'%';
   const img=document.getElementById('imgpos-img');
-  img.style.objectFit='cover';
-  img.style.objectPosition=imgPosX+'% '+imgPosY+'%';
-  // 크기 조절: width/height로 (transform 안 씀 → 깨짐 없음)
-  if(imgPosSize>100){
-    img.style.width=imgPosSize+'%';
-    img.style.height=imgPosSize+'%';
-    img.style.maxWidth='none';
-  } else {
-    img.style.width='100%';
-    img.style.height='100%';
-    img.style.maxWidth='';
-  }
-  img.style.transform='';
+  const sz=imgPosSize/100;
+  img.style.cssText=`position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:${imgPosX}% ${imgPosY}%;transform:scale(${sz});transform-origin:${imgPosX}% ${imgPosY}%;`;
 }
 function saveImgPos(){
   const cat=(cache[tab]||[]).find(c=>c.id===imgPosCatId);if(!cat)return;
@@ -926,8 +953,7 @@ function ovCardHtml(cat){
   const g=cat.gallery||[];
   const pos=cat.imgPos||{x:50,y:50,size:100};
   const sz=(pos.size||100)/100;
-  const pw=sz>1?Math.round(sz*100)+'%':'100%';
-  const ps=`object-fit:cover;object-position:${pos.x}% ${pos.y}%;width:${pw};height:${pw};max-width:none;`;
+  const ps=`object-fit:cover;object-position:${pos.x}% ${pos.y}%;`;
   let thumb='';
   if(cat.avatar) thumb=`<img src="${cat.avatar}" alt="" style="${ps}">`;
   else if(g.length>=4) thumb=`<div class="ovstrip">${g.slice(0,4).map(s=>`<img src="${s}" alt="">`).join('')}</div>`;
@@ -1004,9 +1030,7 @@ function renderDetail(id){
     <div class="gallery">
       ${gallery.map((src,gi)=>{
         const gpos=(cat.galPos&&cat.galPos[gi])||{x:50,y:50,size:100};
-        const gsz=gpos.size/100;
-        const gpw=gsz>1?Math.round(gsz*100)+'%':'100%';
-        const gst=`object-fit:cover;object-position:${gpos.x}% ${gpos.y}%;width:${gpw};height:${gpw};max-width:none;`;
+        const gst=`object-fit:cover;object-position:${gpos.x}% ${gpos.y}%;`;
         return `<div class="gimgwrap" data-gi="${gi}" onclick="openLbox('${src.replace(/'/g,"\\'")}')">
           <img src="${src}" alt="" style="${gst}">
           ${IS_VIEW?'':`<button class="gimgdel" onclick="event.stopPropagation();delGalImg('${cat.id}',${gi})">✕</button>
@@ -1213,18 +1237,50 @@ function editGroupTitle(gi,btn){
   inp.addEventListener('blur',done);inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=cur;inp.blur();}});
 }
 function openGroupModal(){
-  // 삭제된 그룹 ID 정리
+  renderGroupModal();
+  document.getElementById('groupmodal').classList.add('on');
+}
+
+function renderGroupModal(){
   const groups=getGroups();
   const validIds=new Set(groups.map(g=>g.id));
   let dirty=false;
   (cache[tab]||[]).forEach(c=>{if(c.groupId&&!validIds.has(c.groupId)){delete c.groupId;dirty=true;}});
   if(dirty)saveDB();
   const cats=cache[tab]||[];
-  document.getElementById('group-manage-list').innerHTML=cats.map(cat=>{
-    const opts=`<option value="">없음</option>`+groups.map(g=>`<option value="${g.id}" ${cat.groupId===g.id?'selected':''}>${esc(g.name)}</option>`).join('');
-    return `<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--bg);border-radius:8px;border:1px solid var(--border)"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--pink));display:flex;align-items:center;justify-content:center;font-size:13px;overflow:hidden;flex-shrink:0">${cat.avatar?`<img src="${cat.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:(cat.emoji||'🏷️')}</div><span style="flex:1;font-size:12px;font-weight:600">${esc(cat.name)}</span><select data-catid="${cat.id}" style="font-size:11px;border:1px solid var(--border);border-radius:6px;padding:3px 6px;background:var(--bg);font-family:inherit;color:var(--text);outline:none">${opts}</select></div>`;
-  }).join('');
-  document.getElementById('groupmodal').classList.add('on');
+  const groupListHtml=groups.length?`<div style="margin-bottom:12px">
+    <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">그룹 목록</div>
+    ${groups.map((g,gi)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin-bottom:5px">
+      <span style="flex:1;font-size:12px;font-weight:600">${esc(g.name)}</span>
+      <button onclick="renameGroupInModal(${gi})" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--cs)">✏️</button>
+      <button onclick="deleteGroupInModal(${gi})" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--cp)">✕</button>
+    </div>`).join('')}
+    <button onclick="addGroupInModal()" style="width:100%;padding:7px;border:1.5px dashed var(--dim);border-radius:8px;background:none;font-family:inherit;font-size:12px;color:var(--dim);cursor:pointer;margin-top:4px">+ 그룹 추가</button>
+  </div>`:`<div style="margin-bottom:12px"><button onclick="addGroupInModal()" style="width:100%;padding:7px;border:1.5px dashed var(--dim);border-radius:8px;background:none;font-family:inherit;font-size:12px;color:var(--dim);cursor:pointer">+ 그룹 추가</button></div>`;
+  const catListHtml=`<div>
+    <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">카테고리 배정</div>
+    ${cats.map(cat=>{
+      const opts=`<option value="">없음</option>`+groups.map(g=>`<option value="${g.id}" ${cat.groupId===g.id?'selected':''}>${esc(g.name)}</option>`).join('');
+      return `<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin-bottom:5px"><div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--pink));display:flex;align-items:center;justify-content:center;font-size:13px;overflow:hidden;flex-shrink:0">${cat.avatar?`<img src="${cat.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:(cat.emoji||'🏷️')}</div><span style="flex:1;font-size:12px;font-weight:600">${esc(cat.name)}</span><select data-catid="${cat.id}" style="font-size:11px;border:1px solid var(--border);border-radius:6px;padding:3px 6px;background:var(--bg);font-family:inherit;color:var(--text);outline:none">${opts}</select></div>`;
+    }).join('')}
+  </div>`;
+  document.getElementById('group-manage-list').innerHTML=groupListHtml+catListHtml;
+}
+
+function addGroupInModal(){
+  const name=prompt('그룹 이름','새 그룹');if(!name)return;
+  const groups=getGroups();groups.push({id:'g'+Date.now(),name:name.trim()});
+  saveGroups(groups);renderGroupModal();renderOverview();
+}
+function renameGroupInModal(gi){
+  const groups=getGroups();const name=prompt('새 이름',groups[gi]?.name||'');
+  if(!name||!name.trim())return;groups[gi].name=name.trim();saveGroups(groups);renderGroupModal();renderOverview();
+}
+function deleteGroupInModal(gi){
+  if(!confirm('그룹을 삭제할까요?'))return;
+  const groups=getGroups();const gid=groups[gi]?.id;groups.splice(gi,1);saveGroups(groups);
+  (cache[tab]||[]).forEach(c=>{if(c.groupId===gid)delete c.groupId;});
+  saveDB();renderGroupModal();renderOverview();
 }
 function closeGroupModal(){document.getElementById('groupmodal').classList.remove('on');}
 function saveGroupManage(){document.querySelectorAll('#group-manage-list select').forEach(sel=>{const cat=(cache[tab]||[]).find(c=>c.id===sel.dataset.catid);if(!cat)return;if(sel.value)cat.groupId=sel.value;else delete cat.groupId;});saveDB();closeGroupModal();renderOverview();}

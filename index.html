@@ -582,7 +582,7 @@ body.viewer.hide-style #mtab-style{display:none !important;}
       <button class="htab" data-tab="dday" onclick="switchTab('dday')">D-day</button>
     </div>
     <div class="hright">
-      <span class="vbadge">v67</span>
+      <span class="vbadge">v68</span>
       <button class="hbtn vonly" onclick="openTheme()">🎨</button>
       <button class="hbtn vonly" onclick="openCardStyle()">⊞</button>
       <button class="hbtn" id="stylesharebtn" onclick="toggleStyleShare()" style="display:none"></button>
@@ -989,28 +989,27 @@ let fbGroups={artist:[],style:[]};// Firebase에서 받은 그룹 캐시
 function listenData(uid){
   fbDB.ref('users/'+uid+'/data').on('value',snap=>{
     const v=snap.val()||{};
-    // imgPos/galPos/pairTitle 등 로컬 수정값 보존하면서 병합
-    const mergeWithLocal=(newArr,oldArr)=>{
-      if(!newArr)return[];
-      return newArr.map(newCat=>{
-        const old=oldArr.find(o=>o.id===newCat.id);
-        if(!old)return newCat;
-        // 로컬에서 방금 수정한 위치/크기 데이터 유지
-        if(old.imgPos)newCat.imgPos=old.imgPos;
-        if(old.galPos)newCat.galPos=old.galPos;
-        return newCat;
-      });
-    };
-    const newArtist=v.artist?Object.values(v.artist):[];
-    const newStyle=v.style?Object.values(v.style):[];
     cache={
-      artist:mergeWithLocal(newArtist,cache.artist||[]),
-      style:mergeWithLocal(newStyle,cache.style||[])
+      artist:v.artist?Object.values(v.artist):[],
+      style:v.style?Object.values(v.style):[]
     };
     renderSidebar();renderOverview();
     if(selId)renderDetail(selId);
   });
-  // 그룹도 Firebase 구독 (뷰어에서도 보이도록)
+  // imgPos/galPos 별도 경로 구독 (data 콜백에 덮어쓰이지 않도록)
+  fbDB.ref('users/'+uid+'/imgpos').on('value',snap=>{
+    const v=snap.val();if(!v)return;
+    ['artist','style'].forEach(t=>{
+      (cache[t]||[]).forEach(cat=>{
+        if(v[cat.id]){
+          if(v[cat.id].pos) cat.imgPos=v[cat.id].pos;
+          if(v[cat.id].galPos) cat.galPos=v[cat.id].galPos;
+        }
+      });
+    });
+    renderOverview();
+    if(selId)renderDetail(selId);
+  });
   fbDB.ref('users/'+uid+'/groups').on('value',snap=>{
     const v=snap.val()||{};
     fbGroups={
@@ -1186,10 +1185,19 @@ function saveImgPos(){
   if(imgPosGalIdx>=0){
     if(!cat.galPos)cat.galPos={};
     cat.galPos[imgPosGalIdx]={x:imgPosX,y:imgPosY,size:imgPosSize};
+    // galPos도 별도 경로에 저장
+    if(currentUser){
+      fbDB.ref('users/'+currentUser.uid+'/imgpos/'+imgPosCatId+'/galPos/'+imgPosGalIdx)
+        .set({x:imgPosX,y:imgPosY,size:imgPosSize});
+    }
   } else {
     cat.imgPos={x:imgPosX,y:imgPosY,size:imgPosSize};
+    // imgPos를 별도 경로에 저장 → data 콜백에 덮어쓰이지 않음
+    if(currentUser){
+      fbDB.ref('users/'+currentUser.uid+'/imgpos/'+imgPosCatId+'/pos')
+        .set({x:imgPosX,y:imgPosY,size:imgPosSize});
+    }
   }
-  saveDB();
   closeImgPos();
   renderOverview();
   if(selId===imgPosCatId)renderDetail(imgPosCatId);

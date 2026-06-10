@@ -616,12 +616,12 @@ body.viewer.hide-style #mtab-style{display:none !important;}
       <button class="htab" data-tab="dday" onclick="switchTab('dday')">D-day</button>
     </div>
     <div class="hright">
-      <span class="vbadge">v89</span>
+      <span class="vbadge">v75</span>
       <button class="hbtn vonly" onclick="openStylePanel()">🎨 스타일</button>
       <button class="hbtn" id="stylesharebtn" onclick="toggleStyleShare()" style="display:none"></button>
       <button class="hbtn" id="sharebtn" onclick="openShareSettings()" style="display:none">공유</button>
       <button class="hbtn" id="groupbtn" onclick="openGroupModal()" style="display:none">그룹</button>
-      <button class="hbtn" id="signoutbtn" onclick="signOut()" style="display:none;margin-left:10px">로그아웃</button>
+      <button class="hbtn" id="signoutbtn" onclick="signOut()" style="display:none">로그아웃</button>
     </div>
   </header>
 
@@ -730,13 +730,7 @@ body.viewer.hide-style #mtab-style{display:none !important;}
           </div>
         </div>
       </div>
-      <div class="field">
-        <label style="display:flex;align-items:center;justify-content:space-between;">
-          <span>그룹 배정 (선택)</span>
-          <button type="button" onclick="addGroupFromModal()" style="font-size:10px;color:var(--cs);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:700;">+ 새 그룹</button>
-        </label>
-        <select class="finput" id="catgroup"><option value="">없음</option></select>
-      </div>
+      <div class="field"><label>그룹 배정 (선택)</label><select class="finput" id="catgroup"><option value="">없음</option></select></div>
       <div class="field"><label>메모</label><textarea class="ftarea" id="catmemo" rows="2" placeholder="자유롭게..."></textarea></div>
     </div>
     <div class="mfoot"><button class="cancelbtn" onclick="closeCatModal()">취소</button><button class="savebtn" onclick="saveCat()">저장</button></div>
@@ -827,14 +821,7 @@ body.viewer.hide-style #mtab-style{display:none !important;}
       </div>
     </div>
     <div style="height:1px;background:var(--border)"></div>
-    <div>
-      <div class="pop-section-label" style="display:flex;align-items:center;justify-content:space-between;">
-        <span>테마 프리셋</span>
-        <button onclick="saveCustomPreset()" style="font-size:10px;color:var(--cs);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:700;">+ 현재 저장</button>
-      </div>
-      <div class="theme-presets" id="theme-presets"></div>
-      <div id="custom-presets" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
-    </div>
+    <div><div class="pop-section-label">테마 프리셋</div><div class="theme-presets" id="theme-presets"></div></div>
     <div><div class="pop-section-label">커스텀 컬러</div>
       <div class="theme-custom-grid">
         <div class="theme-field"><label>배경</label><div class="theme-field-row"><div class="theme-swatch" id="tsw-bg" onclick="document.getElementById('tpk-bg').click()"></div><input type="color" id="tpk-bg" style="display:none" oninput="onThemePick('bg',this.value)"><input class="theme-hex" id="thx-bg" maxlength="7" oninput="onThemeHex('bg',this.value)"></div></div>

@@ -45,8 +45,8 @@ header{grid-column:1/-1;display:flex;align-items:center;padding:0 14px;gap:6px;b
 
 /* SIDEBAR */
 .sidebar{background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-.sb-top{padding:12px 12px 8px;flex-shrink:0;}
-.sb-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:0 4px;margin-bottom:6px;}
+.sb-top{padding:12px 12px 8px;flex-shrink:0;}.sb-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}.sb-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);padding:0 4px;}.sb-inline-add{background:none;border:none;font-size:11px;font-weight:700;color:var(--cs);cursor:pointer;padding:2px 6px;border-radius:6px;font-family:inherit;opacity:.8;}.sb-inline-add:hover{opacity:1;background:var(--sky);}
+
 .sbox{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:7px;padding:6px 9px;border:1px solid transparent;transition:border-color .14s;}
 .sbox:focus-within{border-color:var(--sky2);}
 .sbox svg{color:var(--dim);flex-shrink:0;}
@@ -616,12 +616,12 @@ body.viewer.hide-style #mtab-style{display:none !important;}
       <button class="htab" data-tab="dday" onclick="switchTab('dday')">D-day</button>
     </div>
     <div class="hright">
-      <span class="vbadge">v75</span>
+      <span class="vbadge">v77</span>
       <button class="hbtn vonly" onclick="openStylePanel()">🎨 스타일</button>
       <button class="hbtn" id="stylesharebtn" onclick="toggleStyleShare()" style="display:none"></button>
       <button class="hbtn" id="sharebtn" onclick="openShareSettings()" style="display:none">공유</button>
       <button class="hbtn" id="groupbtn" onclick="openGroupModal()" style="display:none">그룹</button>
-      <button class="hbtn" id="signoutbtn" onclick="signOut()" style="display:none">로그아웃</button>
+      <button class="hbtn" id="signoutbtn" onclick="signOut()" style="display:none;margin-left:10px">로그아웃</button>
     </div>
   </header>
 
@@ -629,7 +629,10 @@ body.viewer.hide-style #mtab-style{display:none !important;}
   <div class="sidebar" id="sidebar">
     <div class="sb-handle"></div>
     <div class="sb-top">
-      <div class="sb-label" id="sblabel">캐릭터명단</div>
+      <div class="sb-top-row">
+        <div class="sb-label" id="sblabel">캐릭터명단</div>
+        <button class="sb-inline-add" id="sb-inline-add" onclick="openAddCat()" style="display:none">+ 추가</button>
+      </div>
       <div class="sbox">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" placeholder="검색..." id="searchInput" oninput="renderSidebar()">
@@ -637,7 +640,7 @@ body.viewer.hide-style #mtab-style{display:none !important;}
     </div>
     <div class="catlist" id="catlist"></div>
     <div class="sbfoot" id="sbfoot"></div>
-    <div id="sb-addbtn-wrap" style="display:none;padding:8px 12px;border-top:1px solid var(--border);"><button onclick="openAddCat()" style="width:100%;padding:7px;border:1.5px dashed var(--dim);border-radius:8px;background:none;font-family:inherit;font-size:12px;font-weight:600;color:var(--cs);cursor:pointer;">+ 추가</button></div>
+
   </div>
 
   <div class="main" id="mainarea">
@@ -2268,9 +2271,9 @@ function fillCatGroupSelect(currentGroupId){
 
 // ── 사이드바 + 추가 버튼 표시 ──
 function updateSbAddBtn(){
-  const wrap=document.getElementById('sb-addbtn-wrap');
-  if(!wrap)return;
-  wrap.style.display=(!IS_VIEW&&tab!=='dday')?'block':'none';
+  const btn=document.getElementById('sb-inline-add');
+  if(!btn)return;
+  btn.style.display=(!IS_VIEW&&tab!=='dday')?'inline-block':'none';
 }
 const FRAMES=['none','round','square','shadow','border','polaroid'];
 function loadCardStyle(){

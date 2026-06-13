@@ -607,7 +607,7 @@ body.viewer.hide-style #mtab-style{display:none!important;}
         <input type="file" id="pavinput" accept="image/*" style="display:none" onchange="onProfileFile(event)">
       </div>
       <div class="field"><label>이름</label><input class="finput" id="catname" placeholder="예: 호무라"></div>
-      <div class="field"><label>태그 식별자 (옵션)</label><input class="finput" id="cattag" placeholder="예: artist:호무라"></div>
+      <div class="field"><label>키워드 (옵션)</label><input class="finput" id="cattag" placeholder="예: artist:호무라"></div>
       <div class="field"><label>이모지</label>
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
           <input class="finput" id="catemoji" placeholder="🎨" maxlength="4" style="width:70px;">
@@ -1092,7 +1092,7 @@ function renderDetail(id){
 
   document.getElementById('detail').innerHTML=`
     <button class="back-btn" onclick="goBack()">← 목록으로</button>
-    <div class="hero"><div class="heroav">${cat.avatar?`<img src="${cat.avatar}" alt="">`:(cat.emoji||'🏷️')}</div><div class="herobody"><div class="heroname">${esc(cat.name)}</div>${cat.tag?`<div class="herotag">${esc(cat.tag)}</div>`:''  }${entries.length?`<div class="herobadges"><span class="badge">항목 ${entries.length}개</span></div>`:''  }${cat.memo?`<div class="memobox">${esc(cat.memo)}</div>`:''  }</div><div class="herobtns"><button class="ibtn" onclick="openEditCat('${cat.id}')">✏️</button><button class="ibtn" onclick="delCat('${cat.id}')">🗑️</button></div></div>
+    <div class="hero"><div class="heroav">${cat.avatar?`<img src="${cat.avatar}" alt="">`:(cat.emoji||'🏷️')}</div><div class="herobody"><div class="heroname">${esc(cat.name)}</div>${cat.tag?`<div class="herotag">${esc(cat.tag)}</div>`:''  }${cat.memo?`<div class="memobox">${esc(cat.memo)}</div>`:''  }</div><div class="herobtns"><button class="ibtn" onclick="openEditCat('${cat.id}')">✏️</button><button class="ibtn" onclick="delCat('${cat.id}')">🗑️</button></div></div>
     ${tabBar}
     <div class="dtab-pane on" id="dtpane-tags">
       <div class="entries">${entriesHtml}</div>
